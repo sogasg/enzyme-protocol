@@ -48,6 +48,28 @@ contract BadgerSettVaultAdapter is AdapterBase2, BadgerSettVaultActionsMixin {
         __badgerSettVaultLend(incomingAssets[0], spendAssets[0], spendAssetAmounts[0]);
     }
 
+    /// @notice Redeems an amount of Badger Sett Vault shares for its underlying asset
+    /// @param _vaultProxy The VaultProxy of the calling fund
+    /// @param _encodedCallArgs The encoded parameters for the callOnIntegration
+    /// @param _encodedAssetTransferArgs Encoded args for expected assets to spend and receive
+    function redeem(
+        address _vaultProxy,
+        bytes calldata _encodedCallArgs,
+        bytes calldata _encodedAssetTransferArgs
+    )
+        external
+        onlyIntegrationManager
+        postActionIncomingAssetsTransferHandler(_vaultProxy, _encodedAssetTransferArgs)
+    {
+        (
+            address _badgerSettVault,
+            uint256 _badgerSettVaultSharesAmount,
+
+        ) = __decodeRedeemCallArgs(_encodedCallArgs);
+
+        __badgerSettVaultRedeem(_badgerSettVault, _badgerSettVaultSharesAmount);
+    }
+
     /// @notice Parses the expected assets to receive from a call on integration
     /// @param _selector The function selector for the callOnIntegration
     /// @param _encodedCallArgs The encoded parameters for the callOnIntegration
@@ -68,7 +90,7 @@ contract BadgerSettVaultAdapter is AdapterBase2, BadgerSettVaultActionsMixin {
             address[] memory incomingAssets_,
             uint256[] memory minIncomingAssetAmounts_
         )
-    {
+
         if (_selector == LEND_SELECTOR) {
             return __parseAssetsForLend(_encodedCallArgs);
         } else if (_selector == REDEEM_SELECTOR) {
