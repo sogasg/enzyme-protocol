@@ -63,19 +63,24 @@ contract BadgerSettVaultAdapter is AdapterBase2, BadgerSettVaultActionsMixin {
     {
         (
             address _badgerSettVault,
-            uint256 _badgerSettVaultSharesAmount
+            uint256 _outgoingBadgerSettVaultSharesAmount,
+
         ) = __decodeRedeemCallArgs(_encodedCallArgs);
 
-        __badgerSettVaultRedeem(_badgerSettVault, _badgerSettVaultSharesAmount);
+        __badgerSettVaultRedeem(_badgerSettVault, _outgoingBadgerSettVaultSharesAmount);
     }
 
     /// @dev Helper to decode callArgs for redeeming
     function __decodeRedeemCallArgs(bytes memory _encodedCallArgs)
         private
         pure
-        returns (address _badgerSettVault, uint256 _badgerSettVaultSharesAmount)
+        returns (
+            address badgerSettVault_,
+            uint256 outgoingBadgerSettVaultSharesAmount_,
+            uint256 minIncomingUnderlyingAmount_
+        )
     {
-        return abi.decode(_encodedCallArgs, (address, uint256));
+        return abi.decode(_encodedCallArgs, (address, uint256, uint256));
     }
 
     /// @notice Parses the expected assets to receive from a call on integration
@@ -115,16 +120,19 @@ contract BadgerSettVaultAdapter is AdapterBase2, BadgerSettVaultActionsMixin {
         returns (
             address badgerSettVault_,
             uint256 outgoingUnderlyingAmount_,
-            uint256 minIncomingYVaultSharesAmount_
+            uint256 minIncomingBadgerSettVaultSharesAmount_
         )
     {
         return abi.decode(_encodedCallArgs, (address, uint256, uint256));
     }
 
     /// @dev Helper to get the underlying for a given Badger Vault
-    function __getUnderlyingForBadgerSettVault(address _badgerSettVault) private view returns (address underlying_) {
-        return
-            IBadgerSettVault(_badgerSettVault).token();
+    function __getUnderlyingForBadgerSettVault(address _badgerSettVault)
+        private
+        view
+        returns (address underlying_)
+    {
+        return IBadgerSettVault(_badgerSettVault).token();
     }
 
     /// @dev Helper function to parse spend and incoming assets from encoded call args
@@ -186,8 +194,7 @@ contract BadgerSettVaultAdapter is AdapterBase2, BadgerSettVaultActionsMixin {
         (
             address badgerSettVault,
             uint256 outgoingBadgerSettVaultSharesAmount,
-            uint256 minIncomingUnderlyingAmount,
-
+            uint256 minIncomingUnderlyingAmount
         ) = __decodeRedeemCallArgs(_encodedCallArgs);
 
         address underlying = __getUnderlyingForBadgerSettVault(badgerSettVault);
