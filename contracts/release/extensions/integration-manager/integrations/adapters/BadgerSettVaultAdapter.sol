@@ -70,13 +70,22 @@ contract BadgerSettVaultAdapter is AdapterBase2, BadgerSettVaultActionsMixin {
         __badgerSettVaultRedeem(_badgerSettVault, _badgerSettVaultSharesAmount);
     }
 
+    /// @dev Helper to decode callArgs for redeeming
+    function __decodeRedeemCallArgs(bytes memory _encodedCallArgs)
+        private
+        pure
+        returns (address _badgerSettVault, uint256 _badgerSettVaultSharesAmount)
+    {
+        return abi.decode(_encodedCallArgs, (address, uint256));
+    }
+
     /// @notice Parses the expected assets to receive from a call on integration
     /// @param _selector The function selector for the callOnIntegration
     /// @param _encodedCallArgs The encoded parameters for the callOnIntegration
     /// @return spendAssetsHandleType_ A type that dictates how to handle granting
     /// the adapter access to spend assets (`None` by default)
     /// @return spendAssets_ The assets to spend in the call
-    /// @return spendAssetAmounts_ The max asset amounts to spend in the call
+    /// @return spendAssetAmounts_ The asset amounts to spend in the call
     /// @return incomingAssets_ The assets to receive in the call
     /// @return minIncomingAssetAmounts_ The min asset amounts to receive in the call
     function parseAssetsForMethod(bytes4 _selector, bytes calldata _encodedCallArgs)
@@ -90,7 +99,7 @@ contract BadgerSettVaultAdapter is AdapterBase2, BadgerSettVaultActionsMixin {
             address[] memory incomingAssets_,
             uint256[] memory minIncomingAssetAmounts_
         )
-
+    {
         if (_selector == LEND_SELECTOR) {
             return __parseAssetsForLend(_encodedCallArgs);
         } else if (_selector == REDEEM_SELECTOR) {
@@ -98,5 +107,67 @@ contract BadgerSettVaultAdapter is AdapterBase2, BadgerSettVaultActionsMixin {
         }
 
         revert("parseAssetsForMethod: _selector invalid");
+    }
+
+    /// @dev Helper to decode callArgs for lending
+    function __decodeLendCallArgs(bytes memory _encodedCallArgs)
+        private
+        pure
+        returns (
+            address badgerSettVault_,
+            uint256 outgoingUnderlyingAmount_,
+            uint256 minIncomingYVaultSharesAmount_
+        )
+    {
+        return abi.decode(_encodedCallArgs, (address, uint256, uint256));
+    }
+
+    /// @dev Helper to get the underlying for a given Badger Vault
+    function __getUnderlyingForBadgerSettVault(address _badgerSettVault) private view returns (address underlying_) {
+        return
+            IBadgerSettVault(_badgerSettVault).token();
+    }
+
+    /// @dev Helper function to parse spend and incoming assets from encoded call args
+    /// during lend() calls
+    function __parseAssetsForLend(bytes calldata _encodedCallArgs)
+        private
+        view
+        returns (
+            IIntegrationManager.SpendAssetsHandleType spendAssetsHandleType_,
+            address[] memory spendAssets_,
+            uint256[] memory spendAssetAmounts_,
+            address[] memory incomingAssets_,
+            uint256[] memory minIncomingAssetAmounts_
+        )
+    {
+        (
+            address badgerSettVault,
+            uint256 outgoingUnderlyingAmount,
+            uint256 minIncomingBadgerSettVaultSharesAmount
+        ) = __decodeLendCallArgs(_encodedCallArgs);
+
+        address underlying = __getUnderlyingForBadgerSettVault(badgerSettVault);
+        require(underlying != address(0), "__parseAssetsForLend: Unsupported badgerSettVault");
+
+        spendAssets_ = new address[](1);
+        spendAssets_[0] = underlying;
+
+        spendAssetAmounts_ = new uint256[](1);
+        spendAssetAmounts_[0] = outgoingUnderlyingAmount;
+
+        incomingAssets_ = new address[](1);
+        incomingAssets_[0] = badgerSettVault;
+
+        minIncomingAssetAmounts_ = new uint256[](1);
+        minIncomingAssetAmounts_[0] = minIncomingBadgerSettVaultSharesAmount;
+
+        return (
+            IIntegrationManager.SpendAssetsHandleType.Transfer,
+            spendAssets_,
+            spendAssetAmounts_,
+            incomingAssets_,
+            minIncomingAssetAmounts_
+        );
     }
 }
