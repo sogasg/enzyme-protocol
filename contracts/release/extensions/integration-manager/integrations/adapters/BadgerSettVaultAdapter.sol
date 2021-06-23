@@ -63,8 +63,7 @@ contract BadgerSettVaultAdapter is AdapterBase2, BadgerSettVaultActionsMixin {
     {
         (
             address _badgerSettVault,
-            uint256 _badgerSettVaultSharesAmount,
-
+            uint256 _badgerSettVaultSharesAmount
         ) = __decodeRedeemCallArgs(_encodedCallArgs);
 
         __badgerSettVaultRedeem(_badgerSettVault, _badgerSettVaultSharesAmount);
@@ -161,6 +160,50 @@ contract BadgerSettVaultAdapter is AdapterBase2, BadgerSettVaultActionsMixin {
 
         minIncomingAssetAmounts_ = new uint256[](1);
         minIncomingAssetAmounts_[0] = minIncomingBadgerSettVaultSharesAmount;
+
+        return (
+            IIntegrationManager.SpendAssetsHandleType.Transfer,
+            spendAssets_,
+            spendAssetAmounts_,
+            incomingAssets_,
+            minIncomingAssetAmounts_
+        );
+    }
+
+    /// @dev Helper function to parse spend and incoming assets from encoded call args
+    /// during redeem() calls
+    function __parseAssetsForRedeem(bytes calldata _encodedCallArgs)
+        private
+        view
+        returns (
+            IIntegrationManager.SpendAssetsHandleType spendAssetsHandleType_,
+            address[] memory spendAssets_,
+            uint256[] memory spendAssetAmounts_,
+            address[] memory incomingAssets_,
+            uint256[] memory minIncomingAssetAmounts_
+        )
+    {
+        (
+            address badgerSettVault,
+            uint256 outgoingBadgerSettVaultSharesAmount,
+            uint256 minIncomingUnderlyingAmount,
+
+        ) = __decodeRedeemCallArgs(_encodedCallArgs);
+
+        address underlying = __getUnderlyingForBadgerSettVault(badgerSettVault);
+        require(underlying != address(0), "__parseAssetsForRedeem: Unsupported yVault");
+
+        spendAssets_ = new address[](1);
+        spendAssets_[0] = badgerSettVault;
+
+        spendAssetAmounts_ = new uint256[](1);
+        spendAssetAmounts_[0] = outgoingBadgerSettVaultSharesAmount;
+
+        incomingAssets_ = new address[](1);
+        incomingAssets_[0] = underlying;
+
+        minIncomingAssetAmounts_ = new uint256[](1);
+        minIncomingAssetAmounts_[0] = minIncomingUnderlyingAmount;
 
         return (
             IIntegrationManager.SpendAssetsHandleType.Transfer,
