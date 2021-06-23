@@ -31,9 +31,9 @@ abstract contract BadgerSettVaultActionsMixin is AssetHelpers {
     /// @dev Helper to redeem Badger Sett Vault shares for underlying
     function __badgerSettVaultRedeem(
         address _badgerSettVault,
-        uint256 _yVaultSharesAmount
+        uint256 _badgerSettVaultSharesAmount
     ) internal {
         // TODO: What about frontrunning? This could be a big order. Is it a problem?
-        IBadgerSettVault(_badgerSettVault).withdraw(_yVaultSharesAmount);
+        IBadgerSettVault(_badgerSettVault).withdraw(_badgerSettVaultSharesAmount);
     }
 }
