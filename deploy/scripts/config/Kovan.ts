@@ -90,6 +90,10 @@ const mainnetConfig: DeploymentConfig = {
   alphaHomoraV1: {
     ibeth: '0x0000000000000000000000000000000000000000'
   },
+  badger: {
+    badgerToken: '0x0000000000000000000000000000000000000000',
+    settVaults: {}
+  },
   chainlink: {
     aggregators,
     ethusd: ethUsdAggregator,

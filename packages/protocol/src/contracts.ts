@@ -41,6 +41,7 @@ export * from './codegen/SynthetixPriceFeed';
 export * from './codegen/UniswapV2PoolPriceFeed';
 export * from './codegen/WdgldPriceFeed';
 export * from './codegen/YearnVaultV2PriceFeed';
+export * from './codegen/BadgerSettVaultAdapter';
 
 // Integration adapters
 export * from './codegen/AaveAdapter';
@@ -132,6 +133,7 @@ export * from './codegen/IUniswapV2Factory';
 export * from './codegen/IUniswapV2Pair';
 export * from './codegen/IUniswapV2Router2';
 export * from './codegen/IYearnVaultV2';
+export * from './codegen/IBadgerSettVault';
 
 // prettier-ignore
 export interface StandardToken extends Contract<StandardToken> {

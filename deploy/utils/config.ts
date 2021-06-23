@@ -27,6 +27,10 @@ export interface DeploymentConfig {
     ethusd: string;
     aggregators: Record<string, readonly [string, ChainlinkRateAsset]>;
   };
+  badger: {
+    badgerToken: string;
+    settVaults: Record<string, string>;
+  };
   wdgld: {
     wdgld: string;
     ethusd: string;

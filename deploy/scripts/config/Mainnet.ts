@@ -284,6 +284,10 @@ const yVaultsV2 = {
   yUsdc: '0x5f18C75AbDAe578b483E5F43f12a39cF75b973a9',
 };
 
+const badgerSettVaults = {
+  bBADGER: '0x19D97D8fA813EE2f51aD4B4e04EA08bAf4DFfC28', // proxy
+};
+
 const unsupportedAssets = {
   eurs: '0xdb25f211ab05b1c97d595516f45794528a807ad8',
 };
@@ -303,6 +307,10 @@ const mainnetConfig: DeploymentConfig = {
   },
   alphaHomoraV1: {
     ibeth: '0x67B66C99D3Eb37Fa76Aa3Ed1ff33E8e39F0b9c7A'
+  },
+  badger: {
+    badgerToken: primitives.badger,
+    settVaults: badgerSettVaults
   },
   chainlink: {
     aggregators,
