@@ -1,5 +1,6 @@
 export * from './aave';
 export * from './alpha';
+export * from './badger';
 export * from './compound';
 export * from './curve';
 export * from './idle';

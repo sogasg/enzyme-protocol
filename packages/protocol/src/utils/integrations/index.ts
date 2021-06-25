@@ -1,6 +1,7 @@
 export * from './aave';
 export * from './actions';
 export * from './alpha';
+export * from './badgerSettVault';
 export * from './common';
 export * from './compound';
 export * from './curve';

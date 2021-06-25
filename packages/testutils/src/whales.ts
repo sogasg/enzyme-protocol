@@ -4,6 +4,7 @@ import { SignerWithAddress } from '@enzymefinance/hardhat';
 const whales = {
   adai: '0x62e41b1185023bcc14a465d350e1dde341557925',
   ausdc: '0x3ddfa8ec3052539b6c9549f12cea2c295cff5296',
+  badger: '0x8eac32feabbe36d41ea132685fe5bfcfe1e9e46e',
   bat: '0x12274c71304bc0e6b38a56b94d2949b118feb838',
   bnb: '0xbe0eb53f46cd790cd13851d5eff43d12404d33e8',
   bnt: '0xbe0eb53f46cd790cd13851d5eff43d12404d33e8',
