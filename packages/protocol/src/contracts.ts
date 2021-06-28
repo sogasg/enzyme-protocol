@@ -32,6 +32,7 @@ export * from './codegen/IDerivativePriceFeed';
 export * from './codegen/AavePriceFeed';
 export * from './codegen/AggregatedDerivativePriceFeed';
 export * from './codegen/AlphaHomoraV1PriceFeed';
+export * from './codegen/BadgerSettVaultPriceFeed';
 export * from './codegen/CompoundPriceFeed';
 export * from './codegen/CurvePriceFeed';
 export * from './codegen/IdlePriceFeed';

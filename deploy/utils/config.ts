@@ -29,6 +29,7 @@ export interface DeploymentConfig {
   };
   badger: {
     badgerToken: string;
+    controller: string;
     settVaults: Record<string, string>;
   };
   wdgld: {

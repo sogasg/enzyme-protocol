@@ -9,9 +9,10 @@ const fn: DeployFunction = async function (hre) {
 
   const deployer = (await getSigners())[0];
   const integrationManager = await get('IntegrationManager');
+  const badgerSettVaultPriceFeed = await get('BadgerSettVaultPriceFeed');
 
   await deploy('BadgerSettVaultAdapter', {
-    args: [integrationManager.address] as BadgerSettVaultAdapterArgs,
+    args: [integrationManager.address, badgerSettVaultPriceFeed.address] as BadgerSettVaultAdapterArgs,
     from: deployer.address,
     linkedData: {
       type: 'ADAPTER',
@@ -22,6 +23,6 @@ const fn: DeployFunction = async function (hre) {
 };
 
 fn.tags = ['Release', 'Adapters', 'BadgerSettVaultAdapter'];
-fn.dependencies = ['IntegrationManager'];
+fn.dependencies = ['IntegrationManager', 'BadgerSettVaultPriceFeed'];
 
 export default fn;

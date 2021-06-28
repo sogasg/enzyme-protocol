@@ -92,6 +92,7 @@ const mainnetConfig: DeploymentConfig = {
   },
   badger: {
     badgerToken: '0x0000000000000000000000000000000000000000',
+    controller: '0x0000000000000000000000000000000000000000',
     settVaults: {}
   },
   chainlink: {

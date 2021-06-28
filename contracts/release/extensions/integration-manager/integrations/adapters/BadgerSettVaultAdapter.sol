@@ -11,6 +11,7 @@
 
 pragma solidity 0.6.12;
 
+import "../../../../infrastructure/price-feeds/derivatives/feeds/BadgerSettVaultPriceFeed.sol";
 import "../utils/actions/BadgerSettVaultActionsMixin.sol";
 import "../utils/AdapterBase2.sol";
 
@@ -18,7 +19,14 @@ import "../utils/AdapterBase2.sol";
 /// @author Asgeir
 /// @notice Adapter for interacting with Badger Sett Vaults
 contract BadgerSettVaultAdapter is AdapterBase2, BadgerSettVaultActionsMixin {
-    constructor(address _integrationManager) public AdapterBase2(_integrationManager) {}
+    address private immutable BADGER_SETT_VAULT_PRICE_FEED;
+
+    constructor(address _integrationManager, address _badgerSettVaultPriceFeed)
+        public
+        AdapterBase2(_integrationManager)
+    {
+        BADGER_SETT_VAULT_PRICE_FEED = _badgerSettVaultPriceFeed;
+    }
 
     /// @notice Provides a constant string identifier for an adapter
     /// @return identifier_ An identifier string
@@ -42,8 +50,16 @@ contract BadgerSettVaultAdapter is AdapterBase2, BadgerSettVaultActionsMixin {
             ,
             address[] memory spendAssets,
             uint256[] memory spendAssetAmounts,
-            address[] memory incomingAssets
+            address[] memory incomingAssets // the Bager Sett Vault
         ) = __decodeEncodedAssetTransferArgs(_encodedAssetTransferArgs);
+
+        require(
+            BadgerSettVaultPriceFeed(BADGER_SETT_VAULT_PRICE_FEED).isValidateDerivative(
+                incomingAssets[0],
+                spendAssets[0]
+            ),
+            "The incomingAssets[0] is not the current active vault for for spendAssets[0]"
+        );
 
         __badgerSettVaultLend(incomingAssets[0], spendAssets[0], spendAssetAmounts[0]);
     }

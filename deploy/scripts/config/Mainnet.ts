@@ -310,6 +310,7 @@ const mainnetConfig: DeploymentConfig = {
   },
   badger: {
     badgerToken: primitives.badger,
+    controller: '0x63cF44B2548e4493Fd099222A1eC79F3344D9682',
     settVaults: badgerSettVaults
   },
   chainlink: {

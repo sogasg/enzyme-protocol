@@ -25,7 +25,7 @@ contract BadgerSettVaultPriceFeed is IDerivativePriceFeed {
 
     address private immutable BADGER_SETT_VAULT_CONTROLLER;
 
-    constructor(address _fundDeployer, address _badgerSettVaultController) public {
+    constructor(address _badgerSettVaultController) public {
         BADGER_SETT_VAULT_CONTROLLER = _badgerSettVaultController;
     }
 
@@ -54,16 +54,19 @@ contract BadgerSettVaultPriceFeed is IDerivativePriceFeed {
     /// @param _asset The asset to check
     /// @return isSupported_ True if the asset is supported
     function isSupportedAsset(address _asset) external view override returns (bool isSupported_) {
-        return IBadgerSettController(BADGER_SETT_VAULT_CONTROLLER).vaults(_asset) != address(0);
+        return IBadgerSettController(getBadgerSettVaultController()).vaults(_asset) != address(0);
     }
 
     /// @dev Helper to validate the derivative-underlying pair.
-    /// Inherited from SingleUnderlyingDerivativeRegistryMixin.
-    function __validateDerivative(address _derivative, address _underlying) internal override {
-        // Only validate that the _derivative is a valid Badger Sett Vault.
+    function isValidateDerivative(address _derivative, address _underlying)
+        external
+        view
+        returns (bool isValide_)
+    {
         IBadgerSettController badgerSettController = IBadgerSettController(
-            BADGER_SETT_VAULT_CONTROLLER
+            getBadgerSettVaultController()
         );
+
         require(
             badgerSettController.vaults(_underlying) != address(0),
             "__validateDerivative: No active vault for underlying"
@@ -71,7 +74,7 @@ contract BadgerSettVaultPriceFeed is IDerivativePriceFeed {
 
         require(
             badgerSettController.vaults(_underlying) == _derivative,
-            "__validateDerivative: The derivative is not the current active vault for the current underlying"
+            "__validateDerivative: The derivative is not the current active vault for the underlying"
         );
 
         // Validates our assumption that Badger Sett Vault and underlyings will have the same decimals
@@ -79,6 +82,7 @@ contract BadgerSettVaultPriceFeed is IDerivativePriceFeed {
             ERC20(_derivative).decimals() == ERC20(_underlying).decimals(),
             "__validateDerivative: Incongruent decimals"
         );
+        return true;
     }
 
     ///////////////////

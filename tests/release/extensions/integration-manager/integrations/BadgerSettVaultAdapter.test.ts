@@ -119,4 +119,49 @@ describe('parseAssetsForMethod', () => {
       });
     });
   });
+
+  describe('lend', () => {
+    it('works as expected when called for lending by a fund', async () => {
+      const badgerSettVaultAdapter = fork.deployment.badgerSettVaultAdapter;
+      const [fundOwner] = fork.accounts;
+      const badgerSettVault = new StandardToken(fork.config.badger.settVaults.bBADGER, provider);
+      const badger = new StandardToken(fork.config.badger.badgerToken, whales.badger);
+      const outgoingToken = badger;
+      const assetUnit = utils.parseUnits('1', await badger.decimals());
+
+      const { comptrollerProxy, vaultProxy } = await createNewFund({
+        signer: fundOwner,
+        fundOwner,
+        fundDeployer: fork.deployment.fundDeployer,
+        denominationAsset: badger,
+      });
+
+      // Seed the fund with more than the necessary amount of outgoing asset
+      const outgoingUnderlyingAmount = assetUnit;
+      await outgoingToken.transfer(vaultProxy, outgoingUnderlyingAmount.mul(3));
+
+      // Since we can't easily test that an unused underlying amount from a deposit is returned
+      /// to the vaultProxy, we seed the adapter with a small amount of the underlying, which will
+      /// be returned to the vaultProxy upon running lend()
+      const preTxAdapterUnderlyingBalance = assetUnit;
+      await outgoingToken.transfer(badgerSettVaultAdapter, preTxAdapterUnderlyingBalance);
+
+      const [preTxBadgerSettVaultBalance, preTxUnderlyingBalance] = await getAssetBalances({
+        account: vaultProxy,
+        assets: [badgerSettVault, outgoingToken],
+      });
+      expect(preTxBadgerSettVaultBalance).toEqBigNumber(0);
+
+      // TODO: This fails due to the badger token not being supported
+      // see: __isSupportedAsset in contracts/release/extensions/integration-manager/IntegrationManager.sol
+      const lendReceipt = await badgerSettVaultLend({
+        signer: fundOwner,
+        comptrollerProxy,
+        integrationManager: fork.deployment.integrationManager,
+        badgerSettVaultAdapter,
+        badgerSettVault,
+        outgoingUnderlyingAmount,
+      });
+    });
+  });
 });
