@@ -53,14 +53,6 @@ contract BadgerSettVaultAdapter is AdapterBase2, BadgerSettVaultActionsMixin {
             address[] memory incomingAssets // the Bager Sett Vault
         ) = __decodeEncodedAssetTransferArgs(_encodedAssetTransferArgs);
 
-        require(
-            BadgerSettVaultPriceFeed(BADGER_SETT_VAULT_PRICE_FEED).isValidateDerivative(
-                incomingAssets[0],
-                spendAssets[0]
-            ),
-            "The incomingAssets[0] is not the current active vault for for spendAssets[0]"
-        );
-
         __badgerSettVaultLend(incomingAssets[0], spendAssets[0], spendAssetAmounts[0]);
     }
 

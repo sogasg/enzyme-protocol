@@ -16,16 +16,23 @@ import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "../../../../interfaces/IBadgerSettVault.sol";
 import "../../../../interfaces/IBadgerSettController.sol";
 import "../IDerivativePriceFeed.sol";
+import "./utils/SingleUnderlyingDerivativeRegistryMixin.sol";
 
 /// @title BadgerSettVaultPriceFeed Contract
 /// @author Asgeir
 /// @notice Price source for Badger Sett Vault shares
-contract BadgerSettVaultPriceFeed is IDerivativePriceFeed {
+contract BadgerSettVaultPriceFeed is
+    IDerivativePriceFeed,
+    SingleUnderlyingDerivativeRegistryMixin
+{
     using SafeMath for uint256;
 
     address private immutable BADGER_SETT_VAULT_CONTROLLER;
 
-    constructor(address _badgerSettVaultController) public {
+    constructor(address _fundDeployer, address _badgerSettVaultController)
+        public
+        SingleUnderlyingDerivativeRegistryMixin(_fundDeployer)
+    {
         BADGER_SETT_VAULT_CONTROLLER = _badgerSettVaultController;
     }
 
@@ -54,15 +61,11 @@ contract BadgerSettVaultPriceFeed is IDerivativePriceFeed {
     /// @param _asset The asset to check
     /// @return isSupported_ True if the asset is supported
     function isSupportedAsset(address _asset) external view override returns (bool isSupported_) {
-        return IBadgerSettController(getBadgerSettVaultController()).vaults(_asset) != address(0);
+        return getUnderlyingForDerivative(_asset) != address(0);
     }
 
     /// @dev Helper to validate the derivative-underlying pair.
-    function isValidateDerivative(address _derivative, address _underlying)
-        external
-        view
-        returns (bool isValide_)
-    {
+    function __validateDerivative(address _derivative, address _underlying) internal override {
         IBadgerSettController badgerSettController = IBadgerSettController(
             getBadgerSettVaultController()
         );
@@ -82,7 +85,6 @@ contract BadgerSettVaultPriceFeed is IDerivativePriceFeed {
             ERC20(_derivative).decimals() == ERC20(_underlying).decimals(),
             "__validateDerivative: Incongruent decimals"
         );
-        return true;
     }
 
     ///////////////////
