@@ -44,7 +44,7 @@ contract BadgerSettVaultAdapter is AdapterBase2, BadgerSettVaultActionsMixin {
     )
         external
         onlyIntegrationManager
-        postActionIncomingAssetsTransferHandler(_vaultProxy, _encodedAssetTransferArgs)
+        postActionIncomingAssetsTransferHandler(_vaultProxy, _encodedAssetTransferArgs) // ERROR HERE: problem: the transfer function uses _blockLock so we can transfare bBADGER in the same transaction as when it was deposited, because of this the chack that the vault has otten the derivative will fail
     {
         (
             ,

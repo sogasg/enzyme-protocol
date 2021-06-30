@@ -26,4 +26,8 @@ interface IBadgerSettVault {
     function withdraw(uint256) external;
 
     function withdrawAll() external;
+
+    function governance() external view returns (address);
+
+    function approveContractAccess(address account) external;
 }
