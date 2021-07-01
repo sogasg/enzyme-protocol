@@ -46,7 +46,7 @@ describe('parseAssetsForMethod', () => {
         fork.deployment.badgerSettVaultAdapter.parseAssetsForMethod(
           lendSelector,
           badgerSettVaultLendArgs({
-            badgerSettVault: randomAddress(),
+            wrappedBadgerSettVault: randomAddress(),
             outgoingUnderlyingAmount: BigNumber.from(1),
             minIncomingBadgerSettVaultSharesAmount: BigNumber.from(1),
           }),
@@ -57,14 +57,14 @@ describe('parseAssetsForMethod', () => {
     it('generates expected output', async () => {
       const badgerSettVaultAdapter = fork.deployment.badgerSettVaultAdapter;
 
-      const badgerSettVault = new IBadgerSettVault(fork.config.badger.settVaults.bBADGER, provider);
+      const wrappedBadgerSettVault = new IBadgerSettVault(fork.config.badger.settVaults.bBADGER, provider);
       const outgoingUnderlyingAmount = utils.parseEther('2');
       const minIncomingBadgerSettVaultSharesAmount = utils.parseEther('3');
 
       const result = await badgerSettVaultAdapter.parseAssetsForMethod(
         lendSelector,
         badgerSettVaultLendArgs({
-          badgerSettVault,
+          wrappedBadgerSettVault,
           outgoingUnderlyingAmount,
           minIncomingBadgerSettVaultSharesAmount,
         }),
@@ -72,9 +72,9 @@ describe('parseAssetsForMethod', () => {
 
       expect(result).toMatchFunctionOutput(badgerSettVaultAdapter.parseAssetsForMethod, {
         spendAssetsHandleType_: SpendAssetsHandleType.Transfer,
-        spendAssets_: [await badgerSettVault.token()],
+        spendAssets_: [await wrappedBadgerSettVault.token()],
         spendAssetAmounts_: [outgoingUnderlyingAmount],
-        incomingAssets_: [badgerSettVault],
+        incomingAssets_: [wrappedBadgerSettVault],
         minIncomingAssetAmounts_: [minIncomingBadgerSettVaultSharesAmount],
       });
     });
@@ -86,7 +86,7 @@ describe('parseAssetsForMethod', () => {
         fork.deployment.badgerSettVaultAdapter.parseAssetsForMethod(
           redeemSelector,
           badgerSettVaultRedeemArgs({
-            badgerSettVault: randomAddress(),
+            wrappedBadgerSettVault: randomAddress(),
             outgoingBadgerSettVaultSharesAmount: BigNumber.from(1),
             minIncomingUnderlyingAmount: BigNumber.from(1),
           }),
@@ -97,14 +97,14 @@ describe('parseAssetsForMethod', () => {
     it('generates expected output', async () => {
       const badgerSettVaultAdapter = fork.deployment.badgerSettVaultAdapter;
 
-      const badgerSettVault = new IBadgerSettVault(fork.config.badger.settVaults.bBADGER, provider);
+      const wrappedBadgerSettVault = new IBadgerSettVault(fork.config.badger.settVaults.bBADGER, provider);
       const outgoingBadgerSettVaultSharesAmount = utils.parseEther('2');
       const minIncomingUnderlyingAmount = utils.parseEther('3');
 
       const result = await badgerSettVaultAdapter.parseAssetsForMethod(
         redeemSelector,
         badgerSettVaultRedeemArgs({
-          badgerSettVault,
+          wrappedBadgerSettVault,
           outgoingBadgerSettVaultSharesAmount,
           minIncomingUnderlyingAmount,
         }),
@@ -112,9 +112,9 @@ describe('parseAssetsForMethod', () => {
 
       expect(result).toMatchFunctionOutput(badgerSettVaultAdapter.parseAssetsForMethod, {
         spendAssetsHandleType_: SpendAssetsHandleType.Transfer,
-        spendAssets_: [badgerSettVault],
+        spendAssets_: [wrappedBadgerSettVault],
         spendAssetAmounts_: [outgoingBadgerSettVaultSharesAmount],
-        incomingAssets_: [await badgerSettVault.token()],
+        incomingAssets_: [await wrappedBadgerSettVault.token()],
         minIncomingAssetAmounts_: [minIncomingUnderlyingAmount],
       });
     });
@@ -124,7 +124,8 @@ describe('parseAssetsForMethod', () => {
     it('works as expected when called for lending by a fund', async () => {
       const badgerSettVaultAdapter = fork.deployment.badgerSettVaultAdapter;
       const [fundOwner] = fork.accounts;
-      const badgerSettVault = new StandardToken(fork.config.badger.settVaults.bBADGER, provider);
+      // const badgerSettVault = new StandardToken(fork.config.badger.settVaults.bBADGER, provider);
+      const wrappedBadgerSettVault = fork.deployment.wrappedBadgerSettVault;
       const badger = new StandardToken(fork.config.badger.badgerToken, whales.badger);
       const outgoingToken = badger;
       const assetUnit = utils.parseUnits('1', await badger.decimals());
@@ -148,7 +149,7 @@ describe('parseAssetsForMethod', () => {
 
       const [preTxBadgerSettVaultBalance, preTxUnderlyingBalance] = await getAssetBalances({
         account: vaultProxy,
-        assets: [badgerSettVault, outgoingToken],
+        assets: [wrappedBadgerSettVault, outgoingToken],
       });
       expect(preTxBadgerSettVaultBalance).toEqBigNumber(0);
 
@@ -159,7 +160,7 @@ describe('parseAssetsForMethod', () => {
         comptrollerProxy,
         integrationManager: fork.deployment.integrationManager,
         badgerSettVaultAdapter,
-        badgerSettVault,
+        wrappedBadgerSettVault,
         outgoingUnderlyingAmount,
       });
     });

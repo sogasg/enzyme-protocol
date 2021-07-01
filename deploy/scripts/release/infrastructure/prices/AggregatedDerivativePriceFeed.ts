@@ -1,4 +1,6 @@
-import { AggregatedDerivativePriceFeedArgs } from '@enzymefinance/protocol';
+import { 
+  AggregatedDerivativePriceFeedArgs, 
+} from '@enzymefinance/protocol';
 import { DeployFunction } from 'hardhat-deploy/types';
 
 import { loadConfig } from '../../../../utils/config';
@@ -14,7 +16,6 @@ const fn: DeployFunction = async function (hre) {
   const fundDeployer = await get('FundDeployer');
   const aavePriceFeed = await getOrNull('AavePriceFeed');
   const alphaHomoraV1PriceFeed = await getOrNull('AlphaHomoraV1PriceFeed');
-  const badgerSettVaultPriceFeed = await getOrNull('BadgerSettVaultPriceFeed');
   const curvePriceFeed = await getOrNull('CurvePriceFeed');
   const compoundPriceFeed = await getOrNull('CompoundPriceFeed');
   const idlePriceFeed = await getOrNull('IdlePriceFeed');
@@ -27,14 +28,6 @@ const fn: DeployFunction = async function (hre) {
   const derivativePairs: [string, string][] = [];
   if (alphaHomoraV1PriceFeed != null) {
     derivativePairs.push([config.alphaHomoraV1.ibeth, alphaHomoraV1PriceFeed.address]);
-  }
-
-  if (badgerSettVaultPriceFeed != null) {
-    derivativePairs.push(
-      ...Object.values(config.badger.settVaults).map(
-        (badgerSettVault) => [badgerSettVault, badgerSettVaultPriceFeed.address] as [string, string],
-      ),
-    );
   }
 
   if (wdgldPriceFeed != null) {
@@ -115,7 +108,6 @@ fn.dependencies = [
   'FundDeployer',
   'AavePriceFeed',
   'AlphaHomoraV1PriceFeed',
-  'BadgerSettVaultPriceFeed',
   'CurvePriceFeed',
   'CompoundPriceFeed',
   'IdlePriceFeed',

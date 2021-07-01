@@ -70,7 +70,8 @@ const config: HardhatUserConfig = {
       'ICurveRegistry',
       'ICurveStableSwapSteth',
       'IYearnVaultV2',
-      'IBadgerSettVault'
+      'IBadgerSettVault',
+      'IWrappedBadgerSettVault'
     ],
     options: {
       ignoreContractsWithoutAbi: true,

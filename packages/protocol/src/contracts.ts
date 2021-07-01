@@ -18,6 +18,7 @@ export * from './codegen/VaultLib';
 export * from './codegen/ValueInterpreter';
 
 // Extensions
+export * from './codegen/WrappedBadgerSettVault';
 export * from './codegen/IExtension';
 export * from './codegen/FeeManager';
 export * from './codegen/IntegrationManager';
@@ -135,6 +136,7 @@ export * from './codegen/IUniswapV2Pair';
 export * from './codegen/IUniswapV2Router2';
 export * from './codegen/IYearnVaultV2';
 export * from './codegen/IBadgerSettVault';
+export * from './codegen/IWrappedBadgerSettVault';
 
 // prettier-ignore
 export interface StandardToken extends Contract<StandardToken> {

@@ -6,8 +6,9 @@ pragma solidity 0.6.12;
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "@openzeppelin/contracts/math/SafeMath.sol";
 import "../../interfaces/IBadgerSettVault.sol";
+import "../../interfaces/IWrappedBadgerSettVault.sol";
 
-contract WrappedBedgerSettVaul is ERC20 {
+contract WrappedBadgerSettVault is ERC20, IWrappedBadgerSettVault {
     using SafeMath for uint256;
 
     address private BADGER_SETT_VAULT;
@@ -23,12 +24,25 @@ contract WrappedBedgerSettVaul is ERC20 {
         UNDERLYING_TOKEN = badgerSetVault.token();
     }
 
-    function deposit(uint256 _amountOfUnderlyingToken) public {
-        IBadgerSettVault badgerSettVault = IBadgerSettVault(BADGER_SETT_VAULT);
-        ERC20 underlyingToken = ERC20(UNDERLYING_TOKEN);
-        // Before this happens the user needs to have called approve for this token
-        underlyingToken.transferFrom(msg.sender, address(this), _amountOfUnderlyingToken);
+    function token() public view override returns (address) {
+        return IBadgerSettVault(BADGER_SETT_VAULT).token();
+    }
 
+    function underlyingToken() external view override returns (address) {
+        return token();
+    }
+
+    function wrappedVault() external view override returns (address) {
+        return BADGER_SETT_VAULT;
+    }
+
+    function deposit(uint256 _amountOfUnderlyingToken) public override {
+        IBadgerSettVault badgerSettVault = IBadgerSettVault(BADGER_SETT_VAULT);
+        ERC20 underlyingToken_ = ERC20(UNDERLYING_TOKEN);
+        // Before this happens the user needs to have called approve for this token
+        underlyingToken_.transferFrom(msg.sender, address(this), _amountOfUnderlyingToken);
+
+        underlyingToken_.approve(address(badgerSettVault), _amountOfUnderlyingToken);
         uint256 originalShareAmount = badgerSettVault.balanceOf(address(this));
         badgerSettVault.deposit(_amountOfUnderlyingToken);
         uint256 newShareAmount = badgerSettVault.balanceOf(address(this));
@@ -36,15 +50,19 @@ contract WrappedBedgerSettVaul is ERC20 {
         _mint(msg.sender, diffShareAmount);
     }
 
-    function withdraw(uint256 _amountOfBadgerVaultShares) public {
+    function withdraw(uint256 _amountOfBadgerVaultShares) public override {
         _burn(msg.sender, _amountOfBadgerVaultShares);
 
-        ERC20 underlyingToken = ERC20(UNDERLYING_TOKEN);
+        ERC20 underlyingToken_ = ERC20(UNDERLYING_TOKEN);
 
-        uint256 originalUnderlyingAmount = underlyingToken.balanceOf(address(this));
+        uint256 originalUnderlyingAmount = underlyingToken_.balanceOf(address(this));
         IBadgerSettVault(BADGER_SETT_VAULT).withdraw(_amountOfBadgerVaultShares);
-        uint256 newUnderlyingAmount = underlyingToken.balanceOf(address(this));
+        uint256 newUnderlyingAmount = underlyingToken_.balanceOf(address(this));
         uint256 diffAmount = newUnderlyingAmount.sub(originalUnderlyingAmount);
-        underlyingToken.transfer(msg.sender, diffAmount);
+        underlyingToken_.transfer(msg.sender, diffAmount);
+    }
+
+    function getPricePerFullShare() external view override returns (uint256) {
+        return IBadgerSettVault(BADGER_SETT_VAULT).getPricePerFullShare();
     }
 }

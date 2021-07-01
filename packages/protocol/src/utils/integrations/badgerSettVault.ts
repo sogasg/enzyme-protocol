@@ -3,31 +3,31 @@ import { BigNumberish } from 'ethers';
 import { encodeArgs } from '../encoding';
 
 export function badgerSettVaultLendArgs({
-  badgerSettVault,
+  wrappedBadgerSettVault,
   outgoingUnderlyingAmount,
   minIncomingBadgerSettVaultSharesAmount,
 }: {
-  badgerSettVault: AddressLike;
+  wrappedBadgerSettVault: AddressLike;
   outgoingUnderlyingAmount: BigNumberish;
   minIncomingBadgerSettVaultSharesAmount: BigNumberish;
 }) {
   return encodeArgs(
     ['address', 'uint256', 'uint256'],
-    [badgerSettVault, outgoingUnderlyingAmount, minIncomingBadgerSettVaultSharesAmount],
+    [wrappedBadgerSettVault, outgoingUnderlyingAmount, minIncomingBadgerSettVaultSharesAmount],
   );
 }
 
 export function badgerSettVaultRedeemArgs({
-  badgerSettVault,
+  wrappedBadgerSettVault,
   outgoingBadgerSettVaultSharesAmount,
   minIncomingUnderlyingAmount,
 }: {
-  badgerSettVault: AddressLike;
+  wrappedBadgerSettVault: AddressLike;
   outgoingBadgerSettVaultSharesAmount: BigNumberish;
   minIncomingUnderlyingAmount: BigNumberish;
 }) {
   return encodeArgs(
     ['address', 'uint256', 'uint256'],
-    [badgerSettVault, outgoingBadgerSettVaultSharesAmount, minIncomingUnderlyingAmount],
+    [wrappedBadgerSettVault, outgoingBadgerSettVaultSharesAmount, minIncomingUnderlyingAmount],
   );
 }

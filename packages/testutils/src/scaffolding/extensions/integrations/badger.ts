@@ -18,7 +18,7 @@ export async function badgerSettVaultLend({
   comptrollerProxy,
   integrationManager,
   badgerSettVaultAdapter,
-  badgerSettVault,
+  wrappedBadgerSettVault,
   outgoingUnderlyingAmount,
   minIncomingBadgerSettVaultSharesAmount = BigNumber.from(1),
 }: {
@@ -26,7 +26,7 @@ export async function badgerSettVaultLend({
   comptrollerProxy: ComptrollerLib;
   integrationManager: IntegrationManager;
   badgerSettVaultAdapter: BadgerSettVaultAdapter;
-  badgerSettVault: StandardToken;
+  wrappedBadgerSettVault: StandardToken;
   outgoingUnderlyingAmount: BigNumberish;
   minIncomingBadgerSettVaultSharesAmount?: BigNumberish;
 }) {
@@ -34,7 +34,7 @@ export async function badgerSettVaultLend({
     adapter: badgerSettVaultAdapter,
     selector: lendSelector,
     encodedCallArgs: badgerSettVaultLendArgs({
-      badgerSettVault,
+      wrappedBadgerSettVault,
       outgoingUnderlyingAmount,
       minIncomingBadgerSettVaultSharesAmount,
     }),
@@ -50,7 +50,7 @@ export async function badgerSettVaultRedeem({
   comptrollerProxy,
   integrationManager,
   badgerSettVaultAdapter,
-  badgerSettVault,
+  wrappedBadgerSettVault,
   outgoingBadgerSettVaultSharesAmount,
   minIncomingUnderlyingAmount = BigNumber.from(1),
 }: {
@@ -58,7 +58,7 @@ export async function badgerSettVaultRedeem({
   comptrollerProxy: ComptrollerLib;
   integrationManager: IntegrationManager;
   badgerSettVaultAdapter: BadgerSettVaultAdapter;
-  badgerSettVault: StandardToken;
+  wrappedBadgerSettVault: StandardToken;
   outgoingBadgerSettVaultSharesAmount: BigNumberish;
   minIncomingUnderlyingAmount?: BigNumberish;
 }) {
@@ -66,7 +66,7 @@ export async function badgerSettVaultRedeem({
     adapter: badgerSettVaultAdapter,
     selector: redeemSelector,
     encodedCallArgs: badgerSettVaultRedeemArgs({
-      badgerSettVault,
+      wrappedBadgerSettVault,
       outgoingBadgerSettVaultSharesAmount,
       minIncomingUnderlyingAmount,
     }),

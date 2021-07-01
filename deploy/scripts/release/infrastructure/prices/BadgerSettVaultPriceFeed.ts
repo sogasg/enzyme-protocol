@@ -1,11 +1,13 @@
-import { BadgerSettVaultPriceFeed, BadgerSettVaultPriceFeedArgs, IBadgerSettVault } from '@enzymefinance/protocol';
+import {
+  BadgerSettVaultPriceFeedArgs,
+} from '@enzymefinance/protocol';
 import { DeployFunction } from 'hardhat-deploy/types';
 
 import { loadConfig } from '../../../../utils/config';
 
 const fn: DeployFunction = async function (hre) {
   const {
-    deployments: { deploy, get, log },
+    deployments: { deploy, get },
     ethers: { getSigners },
   } = hre;
 
@@ -13,28 +15,13 @@ const fn: DeployFunction = async function (hre) {
   const config = await loadConfig(hre);
   const fundDeployer = await get('FundDeployer');
 
-  const badgerSettVaultPriceFeed = await deploy('BadgerSettVaultPriceFeed', {
+  await deploy('BadgerSettVaultPriceFeed', {
     args: [fundDeployer.address, config.badger.controller] as BadgerSettVaultPriceFeedArgs,
     from: deployer.address,
     log: true,
     skipIfAlreadyDeployed: true,
   });
 
-  if (badgerSettVaultPriceFeed.newlyDeployed) {
-    const badgerSettVaultPriceFeedInstance = new BadgerSettVaultPriceFeed(badgerSettVaultPriceFeed.address, deployer);
-    const badgerSettVaults = Object.values(config.badger.settVaults);
-    const underlyings = await Promise.all(
-      badgerSettVaults.map((badgerSettVaultAddress) => {
-        const badgerSettVault = new IBadgerSettVault(badgerSettVaultAddress, deployer);
-        return badgerSettVault.token();
-      }),
-    );
-
-    if (!!badgerSettVaults.length) {
-      log('Registering Badger Sett Vault tokens');
-      await badgerSettVaultPriceFeedInstance.addDerivatives(badgerSettVaults, underlyings);
-    }
-  }
 };
 
 fn.tags = ['Release', 'BadgerSettVaultPriceFeed'];

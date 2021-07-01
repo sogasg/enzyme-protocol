@@ -5,7 +5,7 @@ import { loadConfig } from '../../../../utils/config';
 
 const fn: DeployFunction = async function (hre) {
   const {
-    deployments: { deploy, get },
+    deployments: { deploy, get},
     ethers: { getSigners },
   } = hre;
 

@@ -14,6 +14,7 @@ pragma solidity 0.6.12;
 import "@openzeppelin/contracts/math/SafeMath.sol";
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "../../../../interfaces/IBadgerSettVault.sol";
+import "../../../../interfaces/IWrappedBadgerSettVault.sol";
 import "../../../../interfaces/IBadgerSettController.sol";
 import "../IDerivativePriceFeed.sol";
 import "./utils/SingleUnderlyingDerivativeRegistryMixin.sol";
@@ -47,13 +48,13 @@ contract BadgerSettVaultPriceFeed is
         returns (address[] memory underlyings_, uint256[] memory underlyingAmounts_)
     {
         underlyings_ = new address[](1);
-        underlyings_[0] = IBadgerSettVault(_derivative).token();
+        underlyings_[0] = IWrappedBadgerSettVault(_derivative).token();
 
         require(underlyings_[0] != address(0), "calcUnderlyingValues: Unsupported derivative");
 
         underlyingAmounts_ = new uint256[](1);
         underlyingAmounts_[0] = _derivativeAmount
-            .mul(IBadgerSettVault(_derivative).getPricePerFullShare())
+            .mul(IWrappedBadgerSettVault(_derivative).getPricePerFullShare())
             .div(10**uint256(ERC20(_derivative).decimals()));
     }
 
@@ -76,7 +77,7 @@ contract BadgerSettVaultPriceFeed is
         );
 
         require(
-            badgerSettController.vaults(_underlying) == _derivative,
+            badgerSettController.vaults(_underlying) == IWrappedBadgerSettVault(_derivative).wrappedVault(),
             "__validateDerivative: The derivative is not the current active vault for the underlying"
         );
 

@@ -1,4 +1,3 @@
-import { IBadgerSettVault } from '@enzymefinance/protocol';
 import { deployProtocolFixture, ProtocolDeployment } from '@enzymefinance/testutils';
 
 let fork: ProtocolDeployment;
@@ -13,9 +12,6 @@ describe('constructor', () => {
     expect(await badgerSettVaultPriceFeed.getBadgerSettVaultController()).toMatchAddress(fork.config.badger.controller);
 
     // Assert each derivative is properly registered
-    for (const badgerSettVaultAddress of Object.values(fork.config.badger.settVaults)) {
-      const badgerSettVault = new IBadgerSettVault(badgerSettVaultAddress, provider);
-      expect(await badgerSettVaultPriceFeed.isSupportedAsset(badgerSettVault)).toBe(true);
-    }
+    expect(await badgerSettVaultPriceFeed.isSupportedAsset(fork.deployment.wrappedBadgerSettVault.address)).toBe(true);
   });
 });

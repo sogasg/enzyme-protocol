@@ -57,6 +57,7 @@ import {
   MinMaxInvestment,
   InvestorWhitelist,
   GuaranteedRedemption,
+  WrappedBadgerSettVault,
 } from '@enzymefinance/protocol';
 
 import { DeploymentConfig } from '../../../deploy/utils/config';
@@ -102,6 +103,7 @@ export async function deployProtocolFixture() {
     aggregatedDerivativePriceFeed: new AggregatedDerivativePriceFeed(fixture['AggregatedDerivativePriceFeed'].address, deployer),
     badgerSettVaultAdapter: new BadgerSettVaultAdapter(fixture['BadgerSettVaultAdapter'].address, deployer),
     valueInterpreter: new ValueInterpreter(fixture['ValueInterpreter'].address, deployer),
+    wrappedBadgerSettVault: new WrappedBadgerSettVault(fixture['WrappedBadgerSettVault'].address, deployer),
     uniswapV2PoolPriceFeed: new UniswapV2PoolPriceFeed(fixture['UniswapV2PoolPriceFeed'].address, deployer),
     integrationManager: new IntegrationManager(fixture['IntegrationManager'].address, deployer),
     curveLiquidityAaveAdapter: new CurveLiquidityAaveAdapter(fixture['CurveLiquidityAaveAdapter'].address, deployer),

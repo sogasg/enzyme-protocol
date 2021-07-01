@@ -1,5 +1,3 @@
-// SPDX-License-Identifier: GPL-3.0
-
 /*
     This file is part of the Enzyme Protocol.
 
@@ -12,13 +10,13 @@
 pragma solidity 0.6.12;
 
 import "../../../../infrastructure/price-feeds/derivatives/feeds/BadgerSettVaultPriceFeed.sol";
-import "../utils/actions/BadgerSettVaultActionsMixin.sol";
+import "../utils/actions/WrappedBadgerSettVaultActionsMixin.sol";
 import "../utils/AdapterBase2.sol";
 
 /// @title BadgerSettVaultAdapter Contract
 /// @author Asgeir
 /// @notice Adapter for interacting with Badger Sett Vaults
-contract BadgerSettVaultAdapter is AdapterBase2, BadgerSettVaultActionsMixin {
+contract BadgerSettVaultAdapter is AdapterBase2, WrappedBadgerSettVaultActionsMixin {
     address private immutable BADGER_SETT_VAULT_PRICE_FEED;
 
     constructor(address _integrationManager, address _badgerSettVaultPriceFeed)
@@ -53,7 +51,7 @@ contract BadgerSettVaultAdapter is AdapterBase2, BadgerSettVaultActionsMixin {
             address[] memory incomingAssets // the Bager Sett Vault
         ) = __decodeEncodedAssetTransferArgs(_encodedAssetTransferArgs);
 
-        __badgerSettVaultLend(incomingAssets[0], spendAssets[0], spendAssetAmounts[0]);
+        __wrappedBadgerSettVaultLend(incomingAssets[0], spendAssets[0], spendAssetAmounts[0]);
     }
 
     /// @notice Redeems an amount of Badger Sett Vault shares for its underlying asset
@@ -70,12 +68,12 @@ contract BadgerSettVaultAdapter is AdapterBase2, BadgerSettVaultActionsMixin {
         postActionIncomingAssetsTransferHandler(_vaultProxy, _encodedAssetTransferArgs)
     {
         (
-            address _badgerSettVault,
+            address _wrappedBadgerSettVault,
             uint256 _outgoingBadgerSettVaultSharesAmount,
 
         ) = __decodeRedeemCallArgs(_encodedCallArgs);
 
-        __badgerSettVaultRedeem(_badgerSettVault, _outgoingBadgerSettVaultSharesAmount);
+        __wrappedBadgerSettVaultRedeem(_wrappedBadgerSettVault, _outgoingBadgerSettVaultSharesAmount);
     }
 
     /// @dev Helper to decode callArgs for redeeming
@@ -83,7 +81,7 @@ contract BadgerSettVaultAdapter is AdapterBase2, BadgerSettVaultActionsMixin {
         private
         pure
         returns (
-            address badgerSettVault_,
+            address wrappedBadgerSettVault_,
             uint256 outgoingBadgerSettVaultSharesAmount_,
             uint256 minIncomingUnderlyingAmount_
         )
@@ -126,7 +124,7 @@ contract BadgerSettVaultAdapter is AdapterBase2, BadgerSettVaultActionsMixin {
         private
         pure
         returns (
-            address badgerSettVault_,
+            address wrappedBadgerSettVault_,
             uint256 outgoingUnderlyingAmount_,
             uint256 minIncomingBadgerSettVaultSharesAmount_
         )
@@ -135,12 +133,12 @@ contract BadgerSettVaultAdapter is AdapterBase2, BadgerSettVaultActionsMixin {
     }
 
     /// @dev Helper to get the underlying for a given Badger Vault
-    function __getUnderlyingForBadgerSettVault(address _badgerSettVault)
+    function __getUnderlyingForBadgerSettVault(address _wrappedBadgerSettVault)
         private
         view
         returns (address underlying_)
     {
-        return IBadgerSettVault(_badgerSettVault).token();
+        return IBadgerSettVault(_wrappedBadgerSettVault).token();
     }
 
     /// @dev Helper function to parse spend and incoming assets from encoded call args
