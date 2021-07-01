@@ -79,90 +79,154 @@ describe('parseAssetsForMethod', () => {
       });
     });
   });
+});
 
-  describe('redeem', () => {
-    it('does not allow an invalid vault address', async () => {
-      await expect(
-        fork.deployment.badgerSettVaultAdapter.parseAssetsForMethod(
-          redeemSelector,
-          badgerSettVaultRedeemArgs({
-            wrappedBadgerSettVault: randomAddress(),
-            outgoingBadgerSettVaultSharesAmount: BigNumber.from(1),
-            minIncomingUnderlyingAmount: BigNumber.from(1),
-          }),
-        ),
-      ).rejects.toBeReverted();
-    });
-
-    it('generates expected output', async () => {
-      const badgerSettVaultAdapter = fork.deployment.badgerSettVaultAdapter;
-
-      const wrappedBadgerSettVault = new IBadgerSettVault(fork.config.badger.settVaults.bBADGER, provider);
-      const outgoingBadgerSettVaultSharesAmount = utils.parseEther('2');
-      const minIncomingUnderlyingAmount = utils.parseEther('3');
-
-      const result = await badgerSettVaultAdapter.parseAssetsForMethod(
+describe('redeem', () => {
+  it('does not allow an invalid vault address', async () => {
+    await expect(
+      fork.deployment.badgerSettVaultAdapter.parseAssetsForMethod(
         redeemSelector,
         badgerSettVaultRedeemArgs({
-          wrappedBadgerSettVault,
-          outgoingBadgerSettVaultSharesAmount,
-          minIncomingUnderlyingAmount,
+          wrappedBadgerSettVault: randomAddress(),
+          outgoingBadgerSettVaultSharesAmount: BigNumber.from(1),
+          minIncomingUnderlyingAmount: BigNumber.from(1),
         }),
-      );
-
-      expect(result).toMatchFunctionOutput(badgerSettVaultAdapter.parseAssetsForMethod, {
-        spendAssetsHandleType_: SpendAssetsHandleType.Transfer,
-        spendAssets_: [wrappedBadgerSettVault],
-        spendAssetAmounts_: [outgoingBadgerSettVaultSharesAmount],
-        incomingAssets_: [await wrappedBadgerSettVault.token()],
-        minIncomingAssetAmounts_: [minIncomingUnderlyingAmount],
-      });
-    });
+      ),
+    ).rejects.toBeReverted();
   });
 
-  describe('lend', () => {
-    it('works as expected when called for lending by a fund', async () => {
-      const badgerSettVaultAdapter = fork.deployment.badgerSettVaultAdapter;
-      const [fundOwner] = fork.accounts;
-      // const badgerSettVault = new StandardToken(fork.config.badger.settVaults.bBADGER, provider);
-      const wrappedBadgerSettVault = fork.deployment.wrappedBadgerSettVault;
-      const badger = new StandardToken(fork.config.badger.badgerToken, whales.badger);
-      const outgoingToken = badger;
-      const assetUnit = utils.parseUnits('1', await badger.decimals());
+  it('generates expected output', async () => {
+    const badgerSettVaultAdapter = fork.deployment.badgerSettVaultAdapter;
 
-      const { comptrollerProxy, vaultProxy } = await createNewFund({
-        signer: fundOwner,
-        fundOwner,
-        fundDeployer: fork.deployment.fundDeployer,
-        denominationAsset: badger,
-      });
+    // const wrappedBadgerSettVault = new IBadgerSettVault(fork.config.badger.settVaults.bBADGER, provider);
+    const wrappedBadgerSettVault = fork.deployment.wrappedBadgerSettVault;
+    const outgoingBadgerSettVaultSharesAmount = utils.parseEther('2');
+    const minIncomingUnderlyingAmount = utils.parseEther('3');
 
-      // Seed the fund with more than the necessary amount of outgoing asset
-      const outgoingUnderlyingAmount = assetUnit;
-      await outgoingToken.transfer(vaultProxy, outgoingUnderlyingAmount.mul(3));
-
-      // Since we can't easily test that an unused underlying amount from a deposit is returned
-      /// to the vaultProxy, we seed the adapter with a small amount of the underlying, which will
-      /// be returned to the vaultProxy upon running lend()
-      const preTxAdapterUnderlyingBalance = assetUnit;
-      await outgoingToken.transfer(badgerSettVaultAdapter, preTxAdapterUnderlyingBalance);
-
-      const [preTxBadgerSettVaultBalance, preTxUnderlyingBalance] = await getAssetBalances({
-        account: vaultProxy,
-        assets: [wrappedBadgerSettVault, outgoingToken],
-      });
-      expect(preTxBadgerSettVaultBalance).toEqBigNumber(0);
-
-      // TODO: This fails due to the badger token not being supported
-      // see: __isSupportedAsset in contracts/release/extensions/integration-manager/IntegrationManager.sol
-      const lendReceipt = await badgerSettVaultLend({
-        signer: fundOwner,
-        comptrollerProxy,
-        integrationManager: fork.deployment.integrationManager,
-        badgerSettVaultAdapter,
+    const result = await badgerSettVaultAdapter.parseAssetsForMethod(
+      redeemSelector,
+      badgerSettVaultRedeemArgs({
         wrappedBadgerSettVault,
-        outgoingUnderlyingAmount,
-      });
+        outgoingBadgerSettVaultSharesAmount,
+        minIncomingUnderlyingAmount,
+      }),
+    );
+
+    expect(result).toMatchFunctionOutput(badgerSettVaultAdapter.parseAssetsForMethod, {
+      spendAssetsHandleType_: SpendAssetsHandleType.Transfer,
+      spendAssets_: [wrappedBadgerSettVault],
+      spendAssetAmounts_: [outgoingBadgerSettVaultSharesAmount],
+      incomingAssets_: [await wrappedBadgerSettVault.token()],
+      minIncomingAssetAmounts_: [minIncomingUnderlyingAmount],
     });
+  });
+});
+
+describe('lend', () => {
+  it('works as expected when called for lending by a fund', async () => {
+    const badgerSettVaultAdapter = fork.deployment.badgerSettVaultAdapter;
+    const [fundOwner] = fork.accounts;
+    const wrappedBadgerSettVault = fork.deployment.wrappedBadgerSettVault;
+    const badger = new StandardToken(fork.config.badger.badgerToken, whales.badger);
+    const outgoingToken = badger;
+    const assetUnit = utils.parseUnits('1', await badger.decimals());
+
+    const { comptrollerProxy, vaultProxy } = await createNewFund({
+      signer: fundOwner,
+      fundOwner,
+      fundDeployer: fork.deployment.fundDeployer,
+      denominationAsset: badger,
+    });
+
+    const outgoingUnderlyingAmount = assetUnit;
+    await outgoingToken.transfer(vaultProxy, outgoingUnderlyingAmount.mul(3));
+
+    const [preTxBadgerSettVaultBalance, preTxUnderlyingBalance] = await getAssetBalances({
+      account: vaultProxy,
+      assets: [wrappedBadgerSettVault, outgoingToken],
+    });
+    expect(preTxBadgerSettVaultBalance).toEqBigNumber(0);
+    expect(preTxUnderlyingBalance).toEqBigNumber(outgoingUnderlyingAmount.mul(3));
+
+    await badgerSettVaultLend({
+      signer: fundOwner,
+      comptrollerProxy,
+      integrationManager: fork.deployment.integrationManager,
+      badgerSettVaultAdapter,
+      wrappedBadgerSettVault,
+      outgoingUnderlyingAmount,
+    });
+
+    const [postTxBadgerSettVaultVaultBalance, postTxUnderlyingBalance] = await getAssetBalances({
+      account: vaultProxy,
+      assets: [wrappedBadgerSettVault, outgoingToken],
+    });
+
+    expect(postTxBadgerSettVaultVaultBalance).toBeGtBigNumber(0);
+    expect(postTxUnderlyingBalance).toEqBigNumber(preTxUnderlyingBalance.sub(outgoingUnderlyingAmount));
+  });
+});
+
+describe('redeem', () => {
+  it('works as expected when called for redeem by a fund', async () => {
+    const badgerSettVaultAdapter = fork.deployment.badgerSettVaultAdapter;
+    const [fundOwner] = fork.accounts;
+    const wrappedBadgerSettVault = fork.deployment.wrappedBadgerSettVault;
+    const badger = new StandardToken(fork.config.badger.badgerToken, whales.badger);
+    const outgoingToken = badger;
+    const assetUnit = utils.parseUnits('1', await badger.decimals());
+
+    const { comptrollerProxy, vaultProxy } = await createNewFund({
+      signer: fundOwner,
+      fundOwner,
+      fundDeployer: fork.deployment.fundDeployer,
+      denominationAsset: badger,
+    });
+
+    const outgoingUnderlyingAmount = assetUnit;
+    await outgoingToken.transfer(vaultProxy, outgoingUnderlyingAmount.mul(3));
+
+    const [preLendTxBadgerSettVaultBalance, preLendTxUnderlyingBalance] = await getAssetBalances({
+      account: vaultProxy,
+      assets: [wrappedBadgerSettVault, outgoingToken],
+    });
+    expect(preLendTxBadgerSettVaultBalance).toEqBigNumber(0);
+    expect(preLendTxUnderlyingBalance).toEqBigNumber(outgoingUnderlyingAmount.mul(3));
+
+    await badgerSettVaultLend({
+      signer: fundOwner,
+      comptrollerProxy,
+      integrationManager: fork.deployment.integrationManager,
+      badgerSettVaultAdapter,
+      wrappedBadgerSettVault,
+      outgoingUnderlyingAmount,
+    });
+
+    const [postLendTxBadgerSettVaultBalance, postLendTxUnderlyingBalance] = await getAssetBalances({
+      account: vaultProxy,
+      assets: [wrappedBadgerSettVault, outgoingToken],
+    });
+
+    expect(postLendTxBadgerSettVaultBalance).toBeGtBigNumber(0);
+    expect(postLendTxUnderlyingBalance).toEqBigNumber(preLendTxUnderlyingBalance.sub(outgoingUnderlyingAmount));
+
+    await badgerSettVaultRedeem({
+      signer: fundOwner,
+      comptrollerProxy,
+      integrationManager: fork.deployment.integrationManager,
+      badgerSettVaultAdapter,
+      wrappedBadgerSettVault,
+      outgoingBadgerSettVaultSharesAmount: postLendTxBadgerSettVaultBalance,
+    });
+
+    const [postRedeemTxBadgerSettVaultBalance, postRedeemTxUnderlyingBalance] = await getAssetBalances({
+      account: vaultProxy,
+      assets: [wrappedBadgerSettVault, outgoingToken],
+    });
+
+    expect(postRedeemTxBadgerSettVaultBalance).toEqBigNumber(0);
+    expect(postRedeemTxUnderlyingBalance).toBeGtBigNumber(postLendTxUnderlyingBalance.add(1));
+
+    expect(wrappedBadgerSettVault.withdraw).toHaveBeenCalledOnContractWith(postLendTxBadgerSettVaultBalance);
   });
 });
